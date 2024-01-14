@@ -18,7 +18,10 @@ if __name__=="__main__":
     driver.maximize_window()
 
     driver.get("https://www.espncricinfo.com/cricketers/team/india-6")
-    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
+    
+    driver.find_element(By.XPATH, '//span[contains(text(), "Allrounders")]').click()
+
+    # driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
 
     # Wait for images to load
     # wait = WebDriverWait(driver, 9000)
@@ -60,7 +63,7 @@ if __name__=="__main__":
         pattern = r'https://www\.espncricinfo\.com/cricketers/[a-zA-Z0-9-]+-\d+'
         if re.match(pattern, str(i.get_attribute('href'))):
             links.append(i.get_attribute('href'))
-            
+
     # print(len(links))
     # print(links)
 
