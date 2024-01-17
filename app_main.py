@@ -44,6 +44,11 @@ class Settings:
                         margin: 20px; /* Margin */
                         padding: 20px;
                     }
+
+                    p{
+                      color: #DA1003 !important;
+                      font-size:20px !important;
+                    }
             </style>""",unsafe_allow_html=True)
 
 
@@ -455,12 +460,18 @@ if __name__=="__main__":
         if option == "AllRounders": 
             df = pd.read_csv(cname+"_allrounders.csv")
             player_names =['--Select--'] + df.name.to_list()
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
             selected_player = st.selectbox(
                         "Select a player",
                         options=player_names,
                     )
-
             if selected_player != '--Select--':
+                st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 40px; font-weight: bold; text-align:left;">Career Statistics of {selected_player}</div>""",unsafe_allow_html=True)
                 link = df['link'][df['name']==selected_player].values[0]
                 driver = page.openDriver()
                 driver.get(link)
@@ -478,6 +489,37 @@ if __name__=="__main__":
                     print("no")
                 driver.close()
 
+        if option == "T20s": 
+            df = pd.read_csv(cname+"_T20s.csv")
+            player_names =['--Select--'] + df.name.to_list()
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+            selected_player = st.selectbox(
+                        "Select a player",
+                        options=player_names,
+                    )
+            if selected_player != '--Select--':
+                st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 40px; font-weight: bold; text-align:left;">Career Statistics of {selected_player}</div>""",unsafe_allow_html=True)
+                link = df['link'][df['name']==selected_player].values[0]
+                driver = page.openDriver()
+                driver.get(link)
+                driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                player_sections = driver.find_elements(By.CSS_SELECTOR,'span.ds-text-tight-m.ds-font-regular.ds-flex')
+                player_section_names = ','.join([section.text for section in player_sections])
+                print(player_section_names)
+                if "Stats" in player_section_names:
+                    for i in player_sections:
+                        if "Stats" in i.text:
+                            i.click()
+                            break
+                    app.career_stats(driver)
+                else:
+                    print("no")
+                driver.close()
                 
 
             
