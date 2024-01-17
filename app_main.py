@@ -260,6 +260,34 @@ class GetPlayers:
                             <p>Teams played : {team_names}</p>
                             <p>Relations : {relations}</p>
                             </div>""",unsafe_allow_html=True)
+            
+    def create_dataframes_for_career_stats(self,tables,t):
+        headings=[]
+        values=[]
+
+        table = tables[t]
+        rows = table.find_elements(By.TAG_NAME, 'tr')
+        for row in rows:
+            cols = row.find_elements(By.TAG_NAME, 'th')
+            for col in cols:
+                if col.text=='':
+                    continue
+                headings.append(col.text)
+        print(headings)
+        print(len(headings))
+        
+        for row in rows:
+            cols = row.find_elements(By.TAG_NAME, 'td')
+            for col in cols:
+                values.append(col.text)
+        print(values)
+        print(len(values))
+        
+        overview_df = pd.DataFrame(index=[values[0]],columns=headings)
+        for i in range(0,len(headings)):
+            overview_df[headings[i]]=values[i+1]
+        st.dataframe(overview_df)
+
         
     def career_stats(self,driver):
         time.sleep(3)
@@ -274,8 +302,15 @@ class GetPlayers:
                     j.click()
                     break
         driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
-        time.sleep(5)
-       
+        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+        time.sleep(7)
+        tables = driver.find_elements(By.TAG_NAME,'table')
+        app.create_dataframes_for_career_stats(tables,0)
+        app.create_dataframes_for_career_stats(tables,1)
+        
+        # print(tables)
+
+        
         
 
     def segregate_allrounders_based_on_gender(self,file_name,cname,lower_limit,upper_limit):

@@ -36,19 +36,34 @@ if __name__=="__main__":
     # print(tables)
 
     headings=[]
-    for i in range(0,2):
-        table = tables[i]
-        rows = table.find_elements(By.TAG_NAME, 'tr')
-        for row in rows:
-            cols = row.find_elements(By.TAG_NAME, 'th')
-            for col in cols:
-                if col.text=='':
-                    continue
-                headings.append(col.text)
+    values=[]
+
+    table = tables[0]
+    rows = table.find_elements(By.TAG_NAME, 'tr')
+    for row in rows:
+        cols = row.find_elements(By.TAG_NAME, 'th')
+        for col in cols:
+            if col.text=='':
+                continue
+            headings.append(col.text)
     print(headings)
-    df=pd.DataFrame({'Overview':['2016-2018',18,15,2,303,50,23.30,382,79.31,0,1,0,25,7]})  
-    df.columns=headings 
-    print(df)
+    print(len(headings))
+    
+    for row in rows:
+        cols = row.find_elements(By.TAG_NAME, 'td')
+        for col in cols:
+            values.append(col.text)
+    print(values)
+    print(len(values))
+    
+    overview_df = pd.DataFrame(index=[values[0]],columns=headings)
+    for i in range(0,len(headings)):
+        overview_df[headings[i]]=values[i+1]
+    print(overview_df)
+
+    # df=pd.DataFrame({'Overview':['2016-2018',18,15,2,303,50,23.30,382,79.31,0,1,0,25,7]}) 
+    
+    
     
     
     # driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
