@@ -261,7 +261,23 @@ class GetPlayers:
                             <p>Relations : {relations}</p>
                             </div>""",unsafe_allow_html=True)
         
+    def career_stats(self,driver):
+        time.sleep(3)
+        column =driver.find_element(By.CSS_SELECTOR,'div.ds-flex.ds-items-center.ds-space-x-4')
+    
+        subcolumns = column.find_elements(By.XPATH,"//div[@class='ds-w-[160px]']")
+        for i in subcolumns:
+            header = i.find_element(By.CSS_SELECTOR, 'div.ds-popper-wrapper>div>span').click()
+            options = driver.find_elements(By.CSS_SELECTOR,'li.ds-w-full.ds-flex>div>span')
+            for j in options:
+                if j.text=="Allround":
+                    j.click()
+                    break
+        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+        time.sleep(5)
+       
         
+
     def segregate_allrounders_based_on_gender(self,file_name,cname,lower_limit,upper_limit):
         df = pd.read_csv(file_name)
         female_players=[]
@@ -354,7 +370,7 @@ if __name__=="__main__":
             ESPNcricinfo has a thriving user community and reaches over 20 million users every month.</div>""",unsafe_allow_html=True)
             
             st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 40px; font-weight: bold; text-align:left;">About this app :</div>""",unsafe_allow_html=True)
-            st.markdown(f"""<div id="custom-container"> PhonePe is India's leading fintech platform with over 300 million registered users. Using PhonePe, users can send and receive money, recharge mobile, DTH, pay at stores, make utility payments, buy gold and make investments. PhonePe forayed into financial services in 2017 with the launch of Gold providing users with a safe and convenient option to buy 24-karat gold securely on its platform. PhonePe has since launched several Mutual Funds and Insurance products like tax-saving funds, liquid funds, international travel insurance and Corona Care, a dedicated insurance product for the COVID-19 pandemic among others. PhonePe also launched its Switch platform in 2018, and today its customers can place orders on over 600 apps directly from within the PhonePe mobile app. PhonePe is accepted at 20+ million merchant outlets across Bharat</div>""",unsafe_allow_html=True)
+            st.markdown(f"""<div id="custom-container"> This app is developed by Me that extracts the details of players who are allrounders and t20s players. Also, it shows the career statistics of each player.</div>""",unsafe_allow_html=True)
             st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 25px; font-weight: bold; text-align:left;">Source ⬇️</div>""",unsafe_allow_html=True)
             st.write("https://www.espncricinfo.com/")
         with col2:
@@ -364,8 +380,6 @@ if __name__=="__main__":
     if selected=="Players Info":
         app = GetPlayers()
         tab1,tab2,tab3,tab4,tab5 = st.tabs(["India", "England", "Bangladesh","Australia","New Zealand"])
-        
-        
         
         with tab1:
             cname="india"
@@ -387,10 +401,7 @@ if __name__=="__main__":
 
             if option == "T20s":    
                 app.player_info(cname+'_T20s.csv')
-
-            
-
-            
+   
         with tab2:
             app.get_country("england",page)
         with tab3:
@@ -399,6 +410,42 @@ if __name__=="__main__":
             app.get_country("australia",page)
         with tab5:
             app.get_country("new-zealand",page)
+
+    if selected=="Career Stats":
+        app = GetPlayers()
+        cname="india"
+            
+        option = option_menu(None, ['Select Any Option','AllRounders', 'T20s'],
+                                        icons=["pencil","exclamation-diamond"], default_index=0)
+        if option == "AllRounders": 
+            df = pd.read_csv(cname+"_allrounders.csv")
+            player_names =['--Select--'] + df.name.to_list()
+            selected_player = st.selectbox(
+                        "Select a player",
+                        options=player_names,
+                    )
+
+            if selected_player != '--Select--':
+                link = df['link'][df['name']==selected_player].values[0]
+                driver = page.openDriver()
+                driver.get(link)
+                driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                player_sections = driver.find_elements(By.CSS_SELECTOR,'span.ds-text-tight-m.ds-font-regular.ds-flex')
+                player_section_names = ','.join([section.text for section in player_sections])
+                print(player_section_names)
+                if "Stats" in player_section_names:
+                    for i in player_sections:
+                        if "Stats" in i.text:
+                            i.click()
+                            break
+                    app.career_stats(driver)
+                else:
+                    print("no")
+                driver.close()
+
+                
+
+            
     # with tab6:
     #     app.get_country()
     # with tab7:
