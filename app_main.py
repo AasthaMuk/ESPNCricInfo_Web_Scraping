@@ -275,8 +275,8 @@ class GetPlayers:
         for row in rows:
             cols = row.find_elements(By.TAG_NAME, 'th')
             for col in cols:
-                if col.text=='':
-                    continue
+                # if col.text=='':
+                #     continue
                 headings.append(col.text)
         print(headings)
         print(len(headings))
@@ -287,10 +287,16 @@ class GetPlayers:
                 values.append(col.text)
         print(values)
         print(len(values))
+
+        overview_df = pd.DataFrame(index=[i for i in range(0,int(len(values)/len(headings)))],columns=headings)
+        for k in range(0,int(len(values)/len(headings))):
+            for i in range(0,len(headings)):
+                overview_df[headings[i]][k]=values[k*len(headings)+i]
         
-        overview_df = pd.DataFrame(index=[values[0]],columns=headings)
-        for i in range(0,len(headings)):
-            overview_df[headings[i]]=values[i+1]
+        
+        # overview_df = pd.DataFrame(index=[values[0]],columns=headings)
+        # for i in range(0,len(headings)):
+        #     overview_df[headings[i]]=values[i+1]
         st.dataframe(overview_df)
 
         
@@ -315,15 +321,39 @@ class GetPlayers:
         
         # print(tables)
 
-        
-        
+
+    def recent_matches(self,driver):
+        time.sleep(4)
+        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+        time.sleep(7)
+        tables = driver.find_elements(By.TAG_NAME,'table')
+        headings=[]
+        values=[]
+        head = tables[0].find_element(By.TAG_NAME, 'thead')
+        rows = head.find_elements(By.TAG_NAME, 'tr')
+        for row in rows:
+            cols = row.find_elements(By.TAG_NAME, 'th')
+            for col in cols:
+                headings.append(col.text)
+        body = tables[0].find_element(By.TAG_NAME, 'tbody')
+        rows = body.find_elements(By.TAG_NAME, 'tr')
+        for row in rows:
+            cols = row.find_elements(By.TAG_NAME, 'td')
+            for col in cols:
+                values.append(col.text)
+        overview_df = pd.DataFrame(index=[i for i in range(0,int(len(values)/len(headings)))],columns=headings)
+        for k in range(0,int(len(values)/len(headings))):
+            for i in range(0,len(headings)):
+                overview_df[headings[i]][k]=values[k*len(headings)+i]
+        st.dataframe(overview_df)
+
+
 
     def segregate_allrounders_based_on_gender(self,file_name,cname,lower_limit,upper_limit):
         df = pd.read_csv(file_name)
         female_players=[]
         male_players=[]
-        male_data= {'Brand':[],'Description':[],'Discountprice':[],
-           'Actualprice':[],'Discountpercent':[],'Links':[],'ImageLinks':[]}
         for index,rows in df.iterrows():
             if rows['age']>=lower_limit and rows['age']<=upper_limit:
                 print(rows['link'])
@@ -352,11 +382,6 @@ class GetPlayers:
                     male_players.append(data)
                 driver.close()
 
-       
-
-
-
-
         # creating dataframes
         female_df = pd.DataFrame(female_players)
         male_df = pd.DataFrame(male_players)
@@ -366,16 +391,26 @@ class GetPlayers:
         male_df.drop_duplicates(inplace=True)
 
         # saving dataframes into csv files
-        if os.path.exists(cname+"_women_allrounders.csv"):
-            female_df.to_csv(cname+"_women_allrounders.csv",mode='a', index=False,header=False)
-        else:
-            female_df.to_csv(cname+"_women_allrounders.csv",mode='a', index=False,header=True)
+        if file_name==cname+'_allrounders.csv':
+            if os.path.exists(cname+"_women_allrounders.csv"):
+                female_df.to_csv(cname+"_women_allrounders.csv",mode='a', index=False,header=False)
+            else:
+                female_df.to_csv(cname+"_women_allrounders.csv",mode='a', index=False,header=True)
 
-        if os.path.exists(cname+"_men_allrounders.csv"):
-            male_df.to_csv(cname+"_men_allrounders.csv",mode='a', index=False,header=False)
+            if os.path.exists(cname+"_men_allrounders.csv"):
+                male_df.to_csv(cname+"_men_allrounders.csv",mode='a', index=False,header=False)
+            else:
+                male_df.to_csv(cname+"_men_allrounders.csv",mode='a', index=False,header=True)
         else:
-            male_df.to_csv(cname+"_men_allrounders.csv",mode='a', index=False,header=True)
-        
+            if os.path.exists(cname+"_women_T20s.csv"):
+                female_df.to_csv(cname+"_women_T20s.csv",mode='a', index=False,header=False)
+            else:
+                female_df.to_csv(cname+"_women_T20s.csv",mode='a', index=False,header=True)
+
+            if os.path.exists(cname+"_men_allrounders.csv"):
+                male_df.to_csv(cname+"_men_allrounders.csv",mode='a', index=False,header=False)
+            else:
+                male_df.to_csv(cname+"_men_allrounders.csv",mode='a', index=False,header=True)
 
     
 
@@ -439,7 +474,16 @@ if __name__=="__main__":
                 
                 app.player_info(cname+'_allrounders.csv')
 
-            if option == "T20s":    
+            if option == "T20s": 
+                lower_limit=0
+                upper_limit=0
+                option = st.selectbox(
+                            'Select age',
+                            ('--Select--','15-20','21-22','23-24','25-27','28-29','30-31','32-33','34-36','37-39'))
+                if option != "--Select--":
+                    lower_limit=int(option.split('-')[0])
+                    upper_limit=int(option.split('-')[1])
+                    app.segregate_allrounders_based_on_gender(cname+'_T20s.csv',cname,lower_limit,upper_limit)   
                 app.player_info(cname+'_T20s.csv')
    
         with tab2:
@@ -475,18 +519,24 @@ if __name__=="__main__":
                 link = df['link'][df['name']==selected_player].values[0]
                 driver = page.openDriver()
                 driver.get(link)
-                driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                # driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
                 player_sections = driver.find_elements(By.CSS_SELECTOR,'span.ds-text-tight-m.ds-font-regular.ds-flex')
                 player_section_names = ','.join([section.text for section in player_sections])
                 print(player_section_names)
                 if "Stats" in player_section_names:
                     for i in player_sections:
                         if "Stats" in i.text:
+                            time.sleep(5)
                             i.click()
                             break
                     app.career_stats(driver)
-                else:
-                    print("no")
+                elif "Matches" in player_section_names:
+                    for i in player_sections:
+                        if "Matches" in i.text:
+                            time.sleep(5)
+                            i.click()
+                            break
+                    app.recent_matches(driver)
                 driver.close()
 
         if option == "T20s": 

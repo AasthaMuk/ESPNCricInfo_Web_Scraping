@@ -17,48 +17,59 @@ if __name__=="__main__":
     driver = webdriver.Chrome(options=options)
     driver.maximize_window()
 
-    driver.get("https://www.espncricinfo.com/cricketers/abhishek-sharma-1070183/bowling-batting-stats")
+    driver.get("https://www.espncricinfo.com/cricketers/akash-deep-1176959/matches")
     driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
     
-    time.sleep(3)
-    column =driver.find_element(By.CSS_SELECTOR,'div.ds-flex.ds-items-center.ds-space-x-4')
+    # time.sleep(3)
+    # column =driver.find_element(By.CSS_SELECTOR,'div.ds-flex.ds-items-center.ds-space-x-4')
     
-    subcolumns = column.find_elements(By.XPATH,"//div[@class='ds-w-[160px]']")
-    for i in subcolumns:
-        header = i.find_element(By.CSS_SELECTOR, 'div.ds-popper-wrapper>div>span').click()
-        options = driver.find_elements(By.CSS_SELECTOR,'li.ds-w-full.ds-flex>div>span')
-        for j in options:
-            if j.text=="Allround":
-                j.click()
-                break
+    # subcolumns = column.find_elements(By.XPATH,"//div[@class='ds-w-[160px]']")
+    # for i in subcolumns:
+    #     header = i.find_element(By.CSS_SELECTOR, 'div.ds-popper-wrapper>div>span').click()
+    #     options = driver.find_elements(By.CSS_SELECTOR,'li.ds-w-full.ds-flex>div>span')
+    #     for j in options:
+    #         if j.text=="Allround":
+    #             j.click()
+    #             break
     time.sleep(10)
     tables = driver.find_elements(By.TAG_NAME,'table')
-    # print(tables)
+    print(len(tables))
 
     headings=[]
     values=[]
 
-    table = tables[0]
-    rows = table.find_elements(By.TAG_NAME, 'tr')
+    # table = tables[0]
+    
+    head = tables[0].find_element(By.TAG_NAME, 'thead')
+    rows = head.find_elements(By.TAG_NAME, 'tr')
     for row in rows:
         cols = row.find_elements(By.TAG_NAME, 'th')
         for col in cols:
-            if col.text=='':
-                continue
-            headings.append(col.text)
-    print(headings)
-    print(len(headings))
+            headings.append(col.text) #print(col.text)
     
+    body = tables[0].find_element(By.TAG_NAME, 'tbody')
+    rows = body.find_elements(By.TAG_NAME, 'tr')
     for row in rows:
         cols = row.find_elements(By.TAG_NAME, 'td')
         for col in cols:
             values.append(col.text)
     print(values)
+    # print(headings)
+    print(len(headings))
+    
+    # for row in rows:
+    #     cols = row.find_elements(By.TAG_NAME, 'td')
+    #     for col in cols:
+    #         values.append(col.text)
+    # print(values)
     print(len(values))
     
-    overview_df = pd.DataFrame(index=[values[0]],columns=headings)
-    for i in range(0,len(headings)):
-        overview_df[headings[i]]=values[i+1]
+    overview_df = pd.DataFrame(index=[i for i in range(0,int(len(values)/len(headings)))],columns=headings)
+    for k in range(0,int(len(values)/len(headings))):
+        for i in range(0,len(headings)):
+            overview_df[headings[i]][k]=values[k*len(headings)+i]
+    
+        
     print(overview_df)
 
     # df=pd.DataFrame({'Overview':['2016-2018',18,15,2,303,50,23.30,382,79.31,0,1,0,25,7]}) 
