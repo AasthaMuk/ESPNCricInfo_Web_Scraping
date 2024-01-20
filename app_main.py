@@ -459,32 +459,34 @@ if __name__=="__main__":
         with tab1:
             cname="india"
             app.get_country(cname,page)
-            option = option_menu(None, ['Select Any Option','AllRounders', 'T20s'],
-                                    icons=["pencil","exclamation-diamond"], default_index=0)
-            if option == "AllRounders": 
-                lower_limit=0
-                upper_limit=0
-                option = st.selectbox(
-                            'Select age',
-                            ('--Select--','15-20','21-22','23-24','25-27','28-29','30-31','32-33','34-36','37-39'))
-                if option != "--Select--":
-                    lower_limit=int(option.split('-')[0])
-                    upper_limit=int(option.split('-')[1])
-                    app.segregate_allrounders_based_on_gender(cname+'_allrounders.csv',cname,lower_limit,upper_limit)
-                
-                app.player_info(cname+'_allrounders.csv')
 
-            if option == "T20s": 
-                lower_limit=0
-                upper_limit=0
-                option = st.selectbox(
-                            'Select age',
-                            ('--Select--','15-20','21-22','23-24','25-27','28-29','30-31','32-33','34-36','37-39'))
-                if option != "--Select--":
-                    lower_limit=int(option.split('-')[0])
-                    upper_limit=int(option.split('-')[1])
-                    app.segregate_allrounders_based_on_gender(cname+'_T20s.csv',cname,lower_limit,upper_limit)   
-                app.player_info(cname+'_T20s.csv')
+            if os.path.exists(cname+"_allrounders.csv") and os.path.exists(cname+"_t20s.csv"):
+                    option = option_menu(None, ['Select Any Option','AllRounders', 'T20s'],
+                                            icons=["pencil","exclamation-diamond"], default_index=0)
+                    if option == "AllRounders": 
+                        lower_limit=0
+                        upper_limit=0
+                        option = st.selectbox(
+                                    'Select age',
+                                    ('--Select--','15-20','21-22','23-24','25-27','28-29','30-31','32-33','34-36','37-39'))
+                        if option != "--Select--":
+                            lower_limit=int(option.split('-')[0])
+                            upper_limit=int(option.split('-')[1])
+                            app.segregate_allrounders_based_on_gender(cname+'_allrounders.csv',cname,lower_limit,upper_limit)
+                        
+                        app.player_info(cname+'_allrounders.csv')
+
+                    if option == "T20s": 
+                        lower_limit=0
+                        upper_limit=0
+                        option = st.selectbox(
+                                    'Select age',
+                                    ('--Select--','15-20','21-22','23-24','25-27','28-29','30-31','32-33','34-36','37-39'))
+                        if option != "--Select--":
+                            lower_limit=int(option.split('-')[0])
+                            upper_limit=int(option.split('-')[1])
+                            app.segregate_allrounders_based_on_gender(cname+'_T20s.csv',cname,lower_limit,upper_limit)   
+                        app.player_info(cname+'_T20s.csv')
    
         with tab2:
             app.get_country("england",page)
@@ -498,96 +500,83 @@ if __name__=="__main__":
     if selected=="Career Stats":
         app = GetPlayers()
         cname="india"
-            
-        option = option_menu(None, ['Select Any Option','AllRounders', 'T20s'],
-                                        icons=["pencil","exclamation-diamond"], default_index=0)
-        if option == "AllRounders": 
-            df = pd.read_csv(cname+"_allrounders.csv")
-            player_names =['--Select--'] + df.name.to_list()
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
-            selected_player = st.selectbox(
-                        "Select a player",
-                        options=player_names,
-                    )
-            if selected_player != '--Select--':
-                st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 40px; font-weight: bold; text-align:left;">Career Statistics of {selected_player}</div>""",unsafe_allow_html=True)
-                link = df['link'][df['name']==selected_player].values[0]
-                driver = page.openDriver()
-                driver.get(link)
-                # driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
-                player_sections = driver.find_elements(By.CSS_SELECTOR,'span.ds-text-tight-m.ds-font-regular.ds-flex')
-                player_section_names = ','.join([section.text for section in player_sections])
-                print(player_section_names)
-                if "Stats" in player_section_names:
-                    for i in player_sections:
-                        if "Stats" in i.text:
-                            time.sleep(5)
-                            i.click()
-                            break
-                    app.career_stats(driver)
-                elif "Matches" in player_section_names:
-                    for i in player_sections:
-                        if "Matches" in i.text:
-                            time.sleep(5)
-                            i.click()
-                            break
-                    app.recent_matches(driver)
-                driver.close()
+        if os.path.exists(cname+"_allrounders.csv") and os.path.exists(cname+"_t20s.csv"):  
+            option = option_menu(None, ['Select Any Option','AllRounders', 'T20s'],
+                                            icons=["pencil","exclamation-diamond"], default_index=0)
+            if option == "AllRounders": 
+                df = pd.read_csv(cname+"_allrounders.csv")
+                player_names =['--Select--'] + df.name.to_list()
+                st.write("")
+                st.write("")
+                st.write("")
+                st.write("")
+                st.write("")
+                st.write("")
+                selected_player = st.selectbox(
+                            "Select a player",
+                            options=player_names,
+                        )
+                if selected_player != '--Select--':
+                    st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 40px; font-weight: bold; text-align:left;">Career Statistics of {selected_player}</div>""",unsafe_allow_html=True)
+                    link = df['link'][df['name']==selected_player].values[0]
+                    driver = page.openDriver()
+                    driver.get(link)
+                    # driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                    player_sections = driver.find_elements(By.CSS_SELECTOR,'span.ds-text-tight-m.ds-font-regular.ds-flex')
+                    player_section_names = ','.join([section.text for section in player_sections])
+                    print(player_section_names)
+                    if "Stats" in player_section_names:
+                        for i in player_sections:
+                            if "Stats" in i.text:
+                                time.sleep(5)
+                                i.click()
+                                break
+                        app.career_stats(driver)
+                    elif "Matches" in player_section_names:
+                        for i in player_sections:
+                            if "Matches" in i.text:
+                                time.sleep(5)
+                                i.click()
+                                break
+                        app.recent_matches(driver)
+                    driver.close()
 
-        if option == "T20s": 
-            df = pd.read_csv(cname+"_T20s.csv")
-            player_names =['--Select--'] + df.name.to_list()
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
-            selected_player = st.selectbox(
-                        "Select a player",
-                        options=player_names,
-                    )
-            if selected_player != '--Select--':
-                st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 40px; font-weight: bold; text-align:left;">Career Statistics of {selected_player}</div>""",unsafe_allow_html=True)
-                link = df['link'][df['name']==selected_player].values[0]
-                driver = page.openDriver()
-                driver.get(link)
-                driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
-                player_sections = driver.find_elements(By.CSS_SELECTOR,'span.ds-text-tight-m.ds-font-regular.ds-flex')
-                player_section_names = ','.join([section.text for section in player_sections])
-                print(player_section_names)
-                if "Stats" in player_section_names:
-                    for i in player_sections:
-                        if "Stats" in i.text:
-                            i.click()
-                            break
-                    app.career_stats(driver)
-                else:
-                    print("no")
-                driver.close()
+            if option == "T20s": 
+                df = pd.read_csv(cname+"_T20s.csv")
+                player_names =['--Select--'] + df.name.to_list()
+                st.write("")
+                st.write("")
+                st.write("")
+                st.write("")
+                st.write("")
+                st.write("")
+                selected_player = st.selectbox(
+                            "Select a player",
+                            options=player_names,
+                        )
+                if selected_player != '--Select--':
+                    st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 40px; font-weight: bold; text-align:left;">Career Statistics of {selected_player}</div>""",unsafe_allow_html=True)
+                    link = df['link'][df['name']==selected_player].values[0]
+                    driver = page.openDriver()
+                    driver.get(link)
+                    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                    player_sections = driver.find_elements(By.CSS_SELECTOR,'span.ds-text-tight-m.ds-font-regular.ds-flex')
+                    player_section_names = ','.join([section.text for section in player_sections])
+                    print(player_section_names)
+                    if "Stats" in player_section_names:
+                        for i in player_sections:
+                            if "Stats" in i.text:
+                                i.click()
+                                break
+                        app.career_stats(driver)
+                    else:
+                        print("no")
+                    driver.close()
                 
-
+        else:
+            st.write('Kindly go to "Player Info" tab and click on AllRounders and T20s players button in order to get career statistics of each player')
             
-    # with tab6:
-    #     app.get_country()
-    # with tab7:
-    #     app.get_country()
-    # with tab8:
-    #     app.get_country()
-    # with tab9:
-    #     app.get_country()
-
-    # driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
-
-    # Wait for images to load
-    # wait = WebDriverWait(driver, 9000)
-    # images = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "img.ds-block")))
-    # images = driver.find_elements(By.CSS_SELECTOR, "img.ds-block")
+    
     
     
 
