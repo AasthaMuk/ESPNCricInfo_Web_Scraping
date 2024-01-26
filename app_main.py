@@ -225,30 +225,36 @@ class GetPlayers:
         driver = page.openDriver()
         driver.get(link)
         
-        
-        # Your CSS selector for the elements you want to retrieve
+        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+        time.sleep(3)
+        details =driver.find_elements(By.CSS_SELECTOR,'p.ds-text-tight-m.ds-font-regular.ds-uppercase.ds-text-typo-mid3')
         try:
             driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
             time.sleep(10)
             image_link = driver.find_element(By.CSS_SELECTOR,'div.ds-ml-auto.ds-w-48.ds-h-48>div>img').get_attribute('src')
         except: image_link = "https://wassets.hscicdn.com/static/images/player-jersey.svg"
-        print(image_link)
-                
-        # full_name = driver.find_element(By.CSS_SELECTOR, 'div.ds-col-span-2.lg\:ds-col-span-1>span>p').text
-        player_details = driver.find_elements(By.CSS_SELECTOR, 'span.ds-text-title-s.ds-font-bold.ds-text-typo')
-        try:
-            full_name = player_details[0].text
-            born = player_details[1].text
-            age = player_details[2].text
-            batting_style = player_details[3].text
-            bowling_style = player_details[4].text
-            playing_role =  player_details[5].text
-            relations = driver.find_element(By.CSS_SELECTOR,'div.ds-flex.ds-flex-wrap>span>div>a>span').text + driver.find_element(By.CSS_SELECTOR,'div.ds-flex.ds-flex-wrap>span>p').text
-        except:
-            relations="--"
 
         teams = driver.find_elements(By.CSS_SELECTOR,'div.ds-grid.lg\:ds-grid-cols-3.ds-grid-cols-2.ds-gap-y-4>a>span')
         team_names = ', '.join([team.text for team in teams])
+        
+        full_name="";born="";age="";batting_style="";bowling_style="";playing_role="";relations=""
+        for i in details:
+            value = i.find_element(By.XPATH,"following-sibling::span").text
+            if i.text=="FULL NAME":
+                full_name=value
+            if i.text=="BORN":
+                born=value
+            if i.text=="AGE":
+                age=value
+            if i.text=="BATTING STYLE":
+                batting_style=value
+            if i.text=="BOWLING STYLE":
+                bowling_style=value
+            if i.text=="PLAYING ROLE":
+                playing_role=value
+            if i.text=="RELATIONS":
+                relations=value
+        
             
         st.markdown(f"""<div style="color: black; font-family: 'Arial', sans-serif; font-size: 40px; font-weight: bold; text-align:left;">Player Info:</div>""",unsafe_allow_html=True)
         col1,col2 = st.columns([1,3])
@@ -265,6 +271,7 @@ class GetPlayers:
                             <p>Teams played : {team_names}</p>
                             <p>Relations : {relations}</p>
                             </div>""",unsafe_allow_html=True)
+        driver.close()
             
     def create_dataframes_for_career_stats(self,tables,t):
         headings=[]
@@ -293,17 +300,12 @@ class GetPlayers:
             for i in range(0,len(headings)):
                 overview_df[headings[i]][k]=values[k*len(headings)+i]
         
-        
-        # overview_df = pd.DataFrame(index=[values[0]],columns=headings)
-        # for i in range(0,len(headings)):
-        #     overview_df[headings[i]]=values[i+1]
         st.dataframe(overview_df)
 
         
     def career_stats(self,driver):
         time.sleep(3)
         column =driver.find_element(By.CSS_SELECTOR,'div.ds-flex.ds-items-center.ds-space-x-4')
-    
         subcolumns = column.find_elements(By.XPATH,"//div[@class='ds-w-[160px]']")
         for i in subcolumns:
             header = i.find_element(By.CSS_SELECTOR, 'div.ds-popper-wrapper>div>span').click()
@@ -318,8 +320,6 @@ class GetPlayers:
         tables = driver.find_elements(By.TAG_NAME,'table')
         app.create_dataframes_for_career_stats(tables,0)
         app.create_dataframes_for_career_stats(tables,1)
-        
-        # print(tables)
 
 
     def recent_matches(self,driver):
@@ -359,26 +359,39 @@ class GetPlayers:
                 print(rows['link'])
                 driver = webdriver.Chrome()
                 driver.get(rows['link'])
-                player_details = driver.find_elements(By.CSS_SELECTOR, 'span.ds-text-title-s.ds-font-bold.ds-text-typo')
+                driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                time.sleep(3)
+                details =driver.find_elements(By.CSS_SELECTOR,'p.ds-text-tight-m.ds-font-regular.ds-uppercase.ds-text-typo-mid3')
                 try:
-                    full_name = player_details[0].text
-                    born = player_details[1].text
-                    age = player_details[2].text
-                    batting_style = player_details[3].text
-                    bowling_style = player_details[4].text
-                    playing_role =  player_details[5].text
-                    relations = driver.find_element(By.CSS_SELECTOR,'div.ds-flex.ds-flex-wrap>span>div>a>span').text + driver.find_element(By.CSS_SELECTOR,'div.ds-flex.ds-flex-wrap>span>p').text
-                except:
-                    relations="--"
+                    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                    time.sleep(10)
+                    image_link = driver.find_element(By.CSS_SELECTOR,'div.ds-ml-auto.ds-w-48.ds-h-48>div>img').get_attribute('src')
+                except: image_link = "https://wassets.hscicdn.com/static/images/player-jersey.svg"
 
                 teams = driver.find_elements(By.CSS_SELECTOR,'div.ds-grid.lg\:ds-grid-cols-3.ds-grid-cols-2.ds-gap-y-4>a>span')
                 team_names = ', '.join([team.text for team in teams])
 
+                data={'FULL NAME':'','BORN':'','AGE':'','BATTING STYLE':'','BOWLING STYLE':'','PLAYING ROLE':'','TEAMS PLAYED':team_names,'RELATIONS':'','IMAGE LINK':image_link}
+                for i in details:
+                    value = i.find_element(By.XPATH,"following-sibling::span").text
+                    if i.text=="FULL NAME":
+                        data['FULL NAME']=value
+                    if i.text=="BORN":
+                        data['BORN']=value
+                    if i.text=="AGE":
+                        data['AGE']=value
+                    if i.text=="BATTING STYLE":
+                        data['BATTING STYLE']=value
+                    if i.text=="BOWLING STYLE":
+                        data['BOWLING STYLE']=value
+                    if i.text=="PLAYING ROLE":
+                        data['PLAYING ROLE']=value
+                    if i.text=="RELATIONS":
+                        data['RELATIONS'] = value
+
                 if "Women" in team_names:
-                    data = {'Full Name':full_name,'Born':born,'Age':age,'Batting Style':batting_style,'Bowling Style':bowling_style,'Playing Role':playing_role,'Teams played':team_names,'Relations':relations}
                     female_players.append(data)
                 else:
-                    data = {'Full Name':full_name,'Born':born,'Age':age,'Batting Style':batting_style,'Bowling Style':bowling_style,'Playing Role':playing_role,'Teams played':team_names,'Relations':relations}
                     male_players.append(data)
                 driver.close()
 
@@ -413,9 +426,174 @@ class GetPlayers:
                 male_df.to_csv(cname+"_men_allrounders.csv",mode='a', index=False,header=True)
 
     
+    def extract_player_details(self,players,link):
+        driver = page.openDriver()
+        driver.get(link)
+        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+        time.sleep(3)
+        details =driver.find_elements(By.CSS_SELECTOR,'p.ds-text-tight-m.ds-font-regular.ds-uppercase.ds-text-typo-mid3')
+        try:
+            driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+            time.sleep(10)
+            image_link = driver.find_element(By.CSS_SELECTOR,'div.ds-ml-auto.ds-w-48.ds-h-48>div>img').get_attribute('src')
+        except: image_link = "https://wassets.hscicdn.com/static/images/player-jersey.svg"
 
+        teams = driver.find_elements(By.CSS_SELECTOR,'div.ds-grid.lg\:ds-grid-cols-3.ds-grid-cols-2.ds-gap-y-4>a>span')
+        team_names = ', '.join([team.text for team in teams])
+
+        data={'FULL NAME':'','BORN':'','AGE':'','BATTING STYLE':'','BOWLING STYLE':'','PLAYING ROLE':'','TEAMS PLAYED':team_names,'RELATIONS':'','IMAGE LINK':image_link}
         
+
+        for i in details:
+            value = i.find_element(By.XPATH,"following-sibling::span").text
+            if i.text=="FULL NAME":
+                data['FULL NAME']=value
+            if i.text=="BORN":
+                data['BORN']=value
+            if i.text=="AGE":
+                data['AGE']=value
+            if i.text=="BATTING STYLE":
+                data['BATTING STYLE']=value
+            if i.text=="BOWLING STYLE":
+                data['BOWLING STYLE']=value
+            if i.text=="PLAYING ROLE":
+                data['PLAYING ROLE']=value
+            if i.text=="RELATIONS":
+                data['RELATIONS'] = value
+                
+        players.append(data)
+        driver.close()
+                
+
+
+    def save_all_player_info(self,file_name,l,h):
+        df = pd.read_csv(file_name)
+        players=[]
+        if file_name == cname+'_allrounders.csv':
+            for link in df.link[l:h].to_list():
+                self.extract_player_details(players,link)
+        elif file_name == cname+'_T20s.csv':
+            for link in df.link[l:h].to_list():
+                self.extract_player_details(players,link)
+
+        players_df = pd.DataFrame(players)
+        players_df.drop_duplicates(inplace=True)
+        players_df.fillna("--",inplace=True)
+
+        if file_name == cname+"_allrounders.csv":
+            if os.path.exists(cname+"_allrounders_player_info.csv"):
+                players_df.to_csv(cname+"_allrounders_player_info.csv",mode='a', index=False,header=False)
+            else:
+                players_df.to_csv(cname+"_allrounders_player_info.csv",mode='a', index=False,header=True)
+
+        elif file_name == cname+"_T20s.csv":
+            if os.path.exists(cname+"_T20s_player_info.csv"):
+                players_df.to_csv(cname+"_T20s_player_info.csv",mode='a', index=False,header=False)
+            else:
+                players_df.to_csv(cname+"_T20s_player_info.csv",mode='a', index=False,header=True)
+                
+
+    def get_val(self,table,headings,s):
+        values=[]
+        for row in table.find_elements(By.TAG_NAME, 'tr'):
+                cols = row.find_elements(By.TAG_NAME, 'td')
+                for col in cols:
+                    values.append(col.text)
+
+        df = pd.DataFrame(index=[i for i in range(0,int(len(values)/len(headings)))],columns=headings)
+        for k in range(0,int(len(values)/len(headings))):
+            for i in range(0,len(headings)):
+                df[headings[i]][k]=values[k*len(headings)+i]
+
+        df[s]=df[s].astype(str).apply(lambda x: x.replace('-','0'))
+        df[s]=pd.to_numeric(df[s])    
+        val = df[s].sum()
+        return val
+    
+    
+    def get_total_runs_wickets(self,headings,headings1,tables):
+        total_runs=0;total_wkts=0
+        if "Runs" in headings:
+            total_runs = self.get_val(tables[0],headings,"Runs")
+        elif "Runs" in headings1:
+            total_runs = self.get_val(tables[1],headings1,"Runs")
+        else:
+            total_runs=0
+
+        if "Wkts" in headings:
+            total_wkts = self.get_val(tables[0],headings,"Wkts")
+        elif "Wkts" in headings1:
+            total_wkts = self.get_val(tables[1],headings1,"Wkts")
+        else:
+            total_wkts=0
+
+        return total_runs,total_wkts
+    
+
+
+    def download_player_runs_wickets(self,file_name):
+        df = pd.read_csv(file_name)
+        player_data=[]
+        for index,rows in df.iterrows():
+            driver = webdriver.Chrome()
+            driver.get(rows['link'])
+            print(rows['link'])
+            print(rows['name'])
+            driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+            driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+            time.sleep(3)
+
+            
+            
+            tables = driver.find_elements(By.TAG_NAME,'table')
+
+            headings=[];headings1=[]
+            for row in tables[0].find_elements(By.TAG_NAME, 'tr'):
+                cols = row.find_elements(By.TAG_NAME, 'th')
+                for col in cols:
+                    headings.append(col.text)  
+            print(headings)
+
+            if "MATCH" in headings:
+                print("no")
+                continue
+
+
+            for row in tables[1].find_elements(By.TAG_NAME, 'tr'):
+                cols = row.find_elements(By.TAG_NAME, 'th')
+                for col in cols:
+                    headings1.append(col.text)
+            print(headings1)
+
+            
+
+            total_runs,total_wkts = self.get_total_runs_wickets(headings,headings1,tables)
+            print(total_runs,total_wkts)
+           
+            data = {
+                'Player Name':rows['name'],
+                'Runs':total_runs,
+                'Wkts':total_wkts
+            }
+            player_data.append(data)
+            driver.close()
+            
         
+        players_df = pd.DataFrame(player_data)
+        print(players_df)
+        
+
+        if file_name == cname+"_allrounders.csv":
+            if os.path.exists(cname+"_runs_and_wickets_allrounders.csv"):
+                players_df.to_csv(cname+"_runs_and_wickets_allrounders.csv",mode='a', index=False,header=False)
+            else:
+                players_df.to_csv(cname+"_runs_and_wickets_allrounders.csv",mode='a', index=False,header=True)
+
+        elif file_name == cname+"_T20s.csv":
+            if os.path.exists(cname+"_runs_and_wickets_T20s.csv"):
+                players_df.to_csv(cname+"_runs_and_wickets_T20s.csv",mode='a', index=False,header=False)
+            else:
+                players_df.to_csv(cname+"_runs_and_wickets_T20s.csv",mode='a', index=False,header=True)   
         
 
         
@@ -476,6 +654,10 @@ if __name__=="__main__":
                         
                         app.player_info(cname+'_allrounders.csv')
 
+                        st.write("Click on this button to get all players data :")
+                        if st.button('Download 50 AllRounders'):
+                            app.save_all_player_info(cname+'_allrounders.csv',0,50)
+
                     if option == "T20s": 
                         lower_limit=0
                         upper_limit=0
@@ -487,7 +669,15 @@ if __name__=="__main__":
                             upper_limit=int(option.split('-')[1])
                             app.segregate_allrounders_based_on_gender(cname+'_T20s.csv',cname,lower_limit,upper_limit)   
                         app.player_info(cname+'_T20s.csv')
-   
+
+                        st.write("Click on this button to get all players data :")
+                        if st.button('Download 50 T20 players'):
+                                app.save_all_player_info(cname+'_T20s.csv',0,50)
+
+                        
+            
+            
+
         with tab2:
             app.get_country("england",page)
         with tab3:
@@ -505,6 +695,8 @@ if __name__=="__main__":
                                             icons=["pencil","exclamation-diamond"], default_index=0)
             if option == "AllRounders": 
                 df = pd.read_csv(cname+"_allrounders.csv")
+                if st.button("Download Runs and Wickets for all AllRounders"):
+                    app.download_player_runs_wickets(cname+"_allrounders.csv")
                 player_names =['--Select--'] + df.name.to_list()
                 st.write("")
                 st.write("")
@@ -543,6 +735,8 @@ if __name__=="__main__":
 
             if option == "T20s": 
                 df = pd.read_csv(cname+"_T20s.csv")
+                if st.button("Download Runs and Wickets for all T20 Players"):
+                    app.download_player_runs_wickets(cname+"_T20s.csv")
                 player_names =['--Select--'] + df.name.to_list()
                 st.write("")
                 st.write("")
@@ -559,18 +753,24 @@ if __name__=="__main__":
                     link = df['link'][df['name']==selected_player].values[0]
                     driver = page.openDriver()
                     driver.get(link)
-                    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
+                    # driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
                     player_sections = driver.find_elements(By.CSS_SELECTOR,'span.ds-text-tight-m.ds-font-regular.ds-flex')
                     player_section_names = ','.join([section.text for section in player_sections])
                     print(player_section_names)
                     if "Stats" in player_section_names:
                         for i in player_sections:
                             if "Stats" in i.text:
+                                time.sleep(5)
                                 i.click()
                                 break
                         app.career_stats(driver)
-                    else:
-                        print("no")
+                    elif "Matches" in player_section_names:
+                        for i in player_sections:
+                            if "Matches" in i.text:
+                                time.sleep(5)
+                                i.click()
+                                break
+                        app.recent_matches(driver)
                     driver.close()
                 
         else:
